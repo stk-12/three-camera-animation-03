@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader";
 import { gsap } from "gsap";
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 gsap.registerPlugin(ScrollTrigger);
@@ -23,7 +24,10 @@ class Main {
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setSize(this.viewport.width, this.viewport.height);
 
+    this.dracoLoader = new DRACOLoader();
+    this.dracoLoader.setDecoderPath('libs/draco/');
     this.loader = new GLTFLoader();
+    this.loader.setDRACOLoader(this.dracoLoader);
 
     this.animations = null;
     this.mixer = null;
@@ -66,7 +70,7 @@ class Main {
   }
 
   _addModel() {
-    this.loader.load('model/city2.glb', (gltf) => {
+    this.loader.load('model/city3.glb', (gltf) => {
       const model = gltf.scene;
       this.animations = gltf.animations;
 
