@@ -28,8 +28,6 @@ class Main {
     this.mixer = null;
     this.clock = new THREE.Clock();
 
-    // this.scrollProgress = 0;
-
     this.scene = new THREE.Scene();
     this.camera = null;
     this.mesh = null;
@@ -72,15 +70,13 @@ class Main {
   }
 
   _addModel() {
-    this.loader.load('model/city1.glb', (gltf) => {
+    this.loader.load('model/city2.glb', (gltf) => {
       const model = gltf.scene;
       this.animations = gltf.animations;
 
       this.camera = gltf.cameras[0];
 
       if(this.animations && this.animations.length) {
-
-          console.log(this.animations);
  
           //Animation Mixerインスタンスを生成
           this.mixer = new THREE.AnimationMixer(model);
@@ -158,16 +154,23 @@ class Main {
   }
 
   _addEventScroll() {
+
+    console.log(this.animations);
+
+    // スクロールとカメラアニメーションの連動
     window.addEventListener('scroll', () => {
-      const scrollY = window.scrollY;
-      const scrollHeight = document.querySelector('.scroll').clientHeight;
+      const scrollY = window.scrollY; // スクロール量
+      const scrollHeight = document.querySelector('.scroll').clientHeight; // スクロール領域の高さ
+      const viewportHeight = window.innerHeight;
+      const scrollProgress = scrollY / (scrollHeight - viewportHeight); // スクロールの進捗度0~1
+
       this.animations.forEach(animation => {
         const animationDuration = animation.duration;
-        // const animationTime = (scrollY / window.innerHeight) * animationDuration;
-        const animationTime = (scrollY / scrollHeight) * animationDuration;
+        const animationTime = scrollProgress * animationDuration;
+        
         const action = this.mixer.existingAction(animation);
         action.reset();
-        this.mixer.setTime(animationTime);
+        this.mixer.setTime(animationTime); // アニメーションの時間を設定
       });
       this.renderer.render(this.scene, this.camera);
     });
