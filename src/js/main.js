@@ -2,9 +2,6 @@
 import * as THREE from "three";
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 // import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js"
-import { gsap } from "gsap";
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-gsap.registerPlugin(ScrollTrigger);
 
 import Lenis from '@studio-freight/lenis';
 
@@ -27,8 +24,11 @@ class Main {
 
     this.loader = new GLTFLoader();
 
+    this.animations = null;
     this.mixer = null;
     this.clock = new THREE.Clock();
+
+    // this.scrollProgress = 0;
 
     this.scene = new THREE.Scene();
     this.camera = null;
@@ -41,6 +41,7 @@ class Main {
     });
 
     this._init();
+
     // this._update();
     this._addEvent();
   }
@@ -73,26 +74,27 @@ class Main {
   _addModel() {
     this.loader.load('model/city1.glb', (gltf) => {
       const model = gltf.scene;
-      const animations = gltf.animations;
+      this.animations = gltf.animations;
 
       this.camera = gltf.cameras[0];
 
+      if(this.animations && this.animations.length) {
 
-      if(animations && animations.length) {
+          console.log(this.animations);
  
           //Animation Mixerインスタンスを生成
           this.mixer = new THREE.AnimationMixer(model);
   
           //全てのAnimation Clipに対して
-          for (let i = 0; i < animations.length; i++) {
-              let animation = animations[i];
+          for (let i = 0; i < this.animations.length; i++) {
+              let animation = this.animations[i];
   
               //Animation Actionを生成
               let action = this.mixer.clipAction(animation) ;
   
               //ループ設定
-              // action.setLoop(THREE.LoopOnce); // 1回再生
-              action.setLoop(THREE.LoopRepeat); // ループ再生
+              action.setLoop(THREE.LoopOnce); // 1回再生
+              // action.setLoop(THREE.LoopRepeat); // ループ再生
   
               //アニメーションの最後のフレームでアニメーションが終了
               action.clampWhenFinished = true;
@@ -100,12 +102,15 @@ class Main {
               //アニメーションを再生
               action.play();
           }
+            
+          this._addEventScroll();
       }
 
 
       this.scene.add(model);
 
       this._update();
+
 
     });
   }
@@ -134,10 +139,6 @@ class Main {
     // this.controls.update();
     requestAnimationFrame(this._update.bind(this));
 
-    //Animation Mixerを実行
-    if(this.mixer){
-      this.mixer.update(this.clock.getDelta() * 0.5);
-    }
   }
 
   _onResize() {
@@ -154,6 +155,22 @@ class Main {
 
   _addEvent() {
     window.addEventListener("resize", this._onResize.bind(this));
+  }
+
+  _addEventScroll() {
+    window.addEventListener('scroll', () => {
+      const scrollY = window.scrollY;
+      const scrollHeight = document.querySelector('.scroll').clientHeight;
+      this.animations.forEach(animation => {
+        const animationDuration = animation.duration;
+        // const animationTime = (scrollY / window.innerHeight) * animationDuration;
+        const animationTime = (scrollY / scrollHeight) * animationDuration;
+        const action = this.mixer.existingAction(animation);
+        action.reset();
+        this.mixer.setTime(animationTime);
+      });
+      this.renderer.render(this.scene, this.camera);
+    });
   }
 }
 
