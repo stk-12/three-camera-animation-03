@@ -54,13 +54,31 @@ canvas {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh
+  height: 200vh;
+
+  .section01 & {
+    height: 100vh;
+  }
+
+  .section04 & {
+    height: 100vh;
+  }
 }
 
-h1 {
-  font-size: 8vw;
+.ttl {
+  font-size: min(20vw, 32vh);
+  line-height: 0.9;
   white-space: nowrap;
-  // filter: drop-shadow(0 0 0.5em #000);
+  opacity: 0;
+  &__inner {
+    display: block;
+    overflow: hidden;
+  }
+  &__txts {
+    // line-height: 0.9;
+    display: inline-block;
+    transform: translateY(100%);
+  }
 }
 
 h2 {

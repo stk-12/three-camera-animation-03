@@ -1,7 +1,8 @@
-// import { radian, random } from './utils';
 import * as THREE from "three";
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-// import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js"
+import { gsap } from "gsap";
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+gsap.registerPlugin(ScrollTrigger);
 
 import Lenis from '@studio-freight/lenis';
 
@@ -37,10 +38,10 @@ class Main {
     this.lenis = new Lenis({
       duration: 1.2,
     });
+    this.lenis.stop();
 
     this._init();
 
-    // this._update();
     this._addEvent();
   }
 
@@ -54,11 +55,6 @@ class Main {
     this.camera.lookAt(new THREE.Vector3(0, 0, 0));
     this.scene.add(this.camera);
   }
-
-  // _setControlls() {
-  //   this.controls = new OrbitControls(this.camera, this.canvas);
-  //   this.controls.enableDamping = true;
-  // }
 
   _setLight() {
     const light = new THREE.DirectionalLight(0xffffff, 0.8);
@@ -118,12 +114,50 @@ class Main {
     this.scene.add(this.mesh);
   }
 
+  _loadAnimation() {
+    const tlLoadAnimation = gsap.timeline();
+    tlLoadAnimation.to('.js-ttl', {
+      opacity: 1,
+      delay: 0.3,
+    })
+    .to('.js-ttl-txts', {
+      y: 0,
+      delay: 0.5,
+      duration: 0.6,
+      // ease: 'circ.inOut',
+      ease: 'circ.out',
+      stagger: 0.03,
+      onComplete: () => {
+        this.lenis.start();
+      }
+    });
+  }
+
+  _scrollAnimation() {
+    const tlScrollAnimation = gsap.timeline({
+      scrollTrigger: {
+        trigger: '.js-section-02',
+        start: 'top 96%',
+        onLeaveBack: () => tlScrollAnimation.reverse(), // 逆再生させる
+        // markers: true,
+      }
+    });
+    tlScrollAnimation.to('.js-ttl-txts', {
+      duration: 0.9,
+      ease: 'circ.inOut',
+      y: '-100%',
+    })
+  }
+
   _init() {
     // this._setCamera();
     // this._setControlls();
     // this._setLight();
     // this._addMesh();
     this._addModel();
+
+    this._loadAnimation();
+    this._scrollAnimation();
   }
 
   _update(time) {
@@ -149,8 +183,13 @@ class Main {
     this.camera.updateProjectionMatrix();
   }
 
+  _scrollReset() {
+    window.scrollTo(0, 0);
+  }
+
   _addEvent() {
     window.addEventListener("resize", this._onResize.bind(this));
+    window.addEventListener("beforeunload", this._scrollReset.bind(this));
   }
 
   _addEventScroll() {
